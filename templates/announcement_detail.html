@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+{% load static %}
+{% load custom_filters %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href= "{% static 'css/styles.css' %}" rel="stylesheet" />
+    <a href="{% url 'index' %}">Ко всем объявлениям</a>
+    <title>{{ announcement.title }}</title>
+</head>
+<body>
+    <h1>{{ announcement.title }}</h1>
+    <p>Категория: {{ announcement.category }}</p>
+    <p>Автор: {{ announcement.author.authorUser.username }}</p>
+    <p>Дата: {{ announcement.created_at|date:"d.m.Y H:i" }}</p>
+    <p>{{ announcement.text|safe }}</p>
+
+    {% if perms.board.change_announcement  %}
+        <a href="{% url 'edit_announcement' announcement.id %}">Редактировать объявление</a>
+    {% else %}
+        <p>У вас нет прав для редактирования этого объявления.</p>
+    {% endif %}
+    <hr>
+    <h2>Отклики</h2>
+    <ul>
+        {% for response in responses %}
+            <li>
+                <p>{{ response.author.username }}: {{ response.content }}</p>
+                <p>Дата: {{ response.created_at|date:"d.m.Y H:i" }}</p>
+            </li>
+        {% empty %}
+            <p>Нет откликов.</p>
+        {% endfor %}
+    </ul>
+
+    {% if perms.board.add_response  %}
+        <hr>
+        <h2>Оставить отклик</h2>
+        <form method="post" action="{% url 'create_response' announcement.id %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Отправить</button>
+        </form>
+    {% endif %}
+</body>
+</html>
